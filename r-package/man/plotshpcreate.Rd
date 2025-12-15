@@ -96,14 +96,14 @@ it is recommendeed to repeat unique Barcodes and Plot numbers if there are multi
 the plotshpcreatre function accounts for this redundance within the function.
 }
 \examples{
-
-
+\dontrun{
 ### Creates shape file for each individual with the inclusion of multirow plot design
-### with nrowplot>1 and multirowind=T. Unique identifiers are subset by the location
+### with nrowplot>1 and multirowind=TRUE. Unique identifiers are subset by the location
 ### of the adjacent plots reading from left to right in geographical space.
 
-### Set working directory to where you want the files to be saved
-setwd("C://Temp")
+# Use temporary directory for output (recommended for examples)
+old_dir <- getwd()
+setwd(tempdir())
 
 plotshpcreate(A=c(746239.817,3382052.264), #Point A c(Easting_0.0,Northing_0.0)
               B=c(746334.224,3382152.870), #Point B c(Easting_1.0,Northing_1.0)
@@ -123,16 +123,14 @@ plotshpcreate(A=c(746239.817,3382052.264), #Point A c(Easting_0.0,Northing_0.0)
               SquarePlot=TRUE,
               RotatePlot=TRUE)
 
-# Creates shape file by combining adacent row of unique plots of multirow plot design
-# within a single polygone with nrowplot>1 and multirowind=T. If a plot is two rows wide
+# Creates shape file by combining adjacent rows of unique plots of multirow plot design
+# within a single polygon with nrowplot>1 and multirowind=FALSE. If a plot is two rows wide
 # the shape file will encompass the plot as a whole.
 
-### Set working directory to where you want the files to be saved
-setwd("C://Temp")
 plotshpcreate(A=c(746239.817,3382052.264), #Point A c(Easting_0.0,Northing_0.0)
               B=c(746334.224,3382152.870), #Point B c(Easting_1.0,Northing_1.0)
               UTMzone="14",
-              Hemisphere="N"
+              Hemisphere="N",
               infile=SampleInfile,
               outfile="Multirowplotscombined",
               nrowplot=2,
@@ -147,5 +145,9 @@ plotshpcreate(A=c(746239.817,3382052.264), #Point A c(Easting_0.0,Northing_0.0)
               SquarePlot=TRUE,
               RotatePlot=TRUE)
 
-# If the experiment is a single row plot design utilize nrowplot=1.
+# Restore original working directory
+setwd(old_dir)
+
+# Note: If the experiment is a single row plot design, use nrowplot=1.
+}
 }

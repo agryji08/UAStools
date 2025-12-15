@@ -1,0 +1,18 @@
+Package: UAStools
+Type: Package
+Title: Tools for Field Based Remote Sensing Applications within Plot Based Agriculture
+Version: 0.5.0
+Date: 2025-12-15
+Authors@R: c(
+    person("Steven L.", "Anderson II", email = "andersst@tamu.edu", role = c("aut", "cre")),
+    person("Seth C.", "Murray", role = "aut"),
+    person("Zhongjie", "Ji", email = "zji7@unl.edu", role = "aut"))
+Description: Provides functions to automate field plot shapefile (.shp) polygons
+    for use in data extraction of remote sensing data sets. Designed for
+    agricultural research applications using Unmanned Aerial System (UAS) imagery.
+License: GPL-2
+Encoding: UTF-8
+Depends: R (>= 3.5.0)
+LazyData: true
+Imports: sf (>= 1.0-0)
+RoxygenNote: 7.1.1
