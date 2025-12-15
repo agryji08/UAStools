@@ -46,21 +46,21 @@
 #' Units can also be input as meters using unit="meter".
 #' @param SquarePlot Logic parameter to indicated if PDF file is desired for visualization of none rotated polygons.
 #' @param RotatePlot Logic parameter to indicated if PDF file is desired for visualization of rotated polygons.
-#' @import rgdal sp
+#' @import sf
 #' @export
 #' @return NULL 
 #' @note it is recommendeed to repeat unique Barcodes and Plot numbers if there are multirow plots (mrowplot>1) as
 #' the plotshpcreatre function accounts for this redundance within the function.
 #'
 #' @examples
-#'
-#'
+#' \dontrun{
 #' ### Creates shape file for each individual with the inclusion of multirow plot design
-#' ### with nrowplot>1 and multirowind=T. Unique identifiers are subset by the location
+#' ### with nrowplot>1 and multirowind=TRUE. Unique identifiers are subset by the location
 #' ### of the adjacent plots reading from left to right in geographical space.
-#' 
-#' ### Set working directory to where you want the files to be saved
-#' setwd("C://Temp")
+#'
+#' # Use temporary directory for output (recommended for examples)
+#' old_dir <- getwd()
+#' setwd(tempdir())
 #'
 #' plotshpcreate(A=c(746239.817,3382052.264), #Point A c(Easting_0.0,Northing_0.0)
 #'               B=c(746334.224,3382152.870), #Point B c(Easting_1.0,Northing_1.0)
@@ -80,16 +80,14 @@
 #'               SquarePlot=TRUE,
 #'               RotatePlot=TRUE)
 #'
-#' # Creates shape file by combining adacent row of unique plots of multirow plot design
-#' # within a single polygone with nrowplot>1 and multirowind=T. If a plot is two rows wide
+#' # Creates shape file by combining adjacent rows of unique plots of multirow plot design
+#' # within a single polygon with nrowplot>1 and multirowind=FALSE. If a plot is two rows wide
 #' # the shape file will encompass the plot as a whole.
-#' 
-#' ### Set working directory to where you want the files to be saved
-#' setwd("C://Temp")
+#'
 #' plotshpcreate(A=c(746239.817,3382052.264), #Point A c(Easting_0.0,Northing_0.0)
 #'               B=c(746334.224,3382152.870), #Point B c(Easting_1.0,Northing_1.0)
 #'               UTMzone="14",
-#'               Hemisphere="N"
+#'               Hemisphere="N",
 #'               infile=SampleInfile,
 #'               outfile="Multirowplotscombined",
 #'               nrowplot=2,
@@ -104,7 +102,11 @@
 #'               SquarePlot=TRUE,
 #'               RotatePlot=TRUE)
 #'
-#' # If the experiment is a single row plot design utilize nrowplot=1.
+#' # Restore original working directory
+#' setwd(old_dir)
+#'
+#' # Note: If the experiment is a single row plot design, use nrowplot=1.
+#' }
 
 
 #### x<-read.csv("C://Temp//plotshpcreate_6plottest.csv",header=T)
@@ -128,13 +130,8 @@ plotshpcreate<-function(A=NULL, #Point A c(Easting_0.0,Northing_0.0)
                         SquarePlot=TRUE,
                         RotatePlot=TRUE){
 # infile<-x
-  if (!requireNamespace("rgdal", quietly = TRUE)) {
-    stop("Package \"rgdal\" needed for this function to work. Please install it.",
-         call. = FALSE)
-  }
-  
-  if (!requireNamespace("sp", quietly = TRUE)) {
-    stop("Package \"sp\" needed for this function to work. Please install it.",
+  if (!requireNamespace("sf", quietly = TRUE)) {
+    stop("Package \"sf\" needed for this function to work. Please install it.",
          call. = FALSE)
   }
   
@@ -869,103 +866,56 @@ for (i in 1:nrow(PlotsSquareM)){
 
 
  ###################################################################
-#   ########## Make Shape Files4 ##############
-# if(multirowind!=T){
+#   ########## Make Shape Files using sf package ##############
 
-  # if (file.exists(paste(output,"\\",field,".shp",sep="")) |
-  #     file.exists(paste(output,"\\",field,".dbf",sep="")) |
-  #     file.exists(paste(output,"\\",field,".shx",sep="")))
-  #   {
-  #   file.remove(paste(output,"\\",field,".shp",sep=""))
-  #   file.remove(paste(output,"\\",field,".dbf",sep=""))
-  #   file.remove(paste(output,"\\",field,".shx",sep=""))
-  #   }
-
-
-  PolygonsToMake <- vector('list', length(nPlot))
+  # Create polygon geometries using sf
+  PolygonsToMake <- vector('list', nrow(PlotsAdjustedM))
   for (i in 1: nrow(PlotsAdjustedM)) {
-    PolygonsToMake[[i]] <- Polygons(list(Polygon(matrix(c(PlotsAdjustedM[i,c(5,7,9,11,5)],
-                                                          PlotsAdjustedM[i,c(4,6,8,10,4)]),5,2),
-                                                 hole=FALSE)),
-                                    rownames(PlotsAdjustedM)[i])
+    coords <- matrix(c(PlotsAdjustedM[i,c(5,7,9,11,5)],
+                       PlotsAdjustedM[i,c(4,6,8,10,4)]), ncol=2)
+    PolygonsToMake[[i]] <- sf::st_polygon(list(coords))
   }
 
+  # Set CRS
   if(is.null(UTMzone)){
-    SpatialPolygonsToMake <- SpatialPolygons((PolygonsToMake))
+    crs_string <- NA
     warning("Coordinate reference system not defined 'UTMzone=NULL'; This may result in difficulties loading shapefiles into other programs.")
-  }
-  
-  if(!is.null(UTMzone)&Hemisphere=="N"){
-    SpatialPolygonsToMake <- SpatialPolygons((PolygonsToMake),
-                                             proj4string = CRS(
-                                               as.character(paste("+proj=utm +zone=",UTMzone," +datum=NAD83 +units=m +no_defs +ellps=GRS80",sep=""))  
-                                             ))
-  }
-  
-  if(!is.null(UTMzone)&Hemisphere=="S"){
-    SpatialPolygonsToMake <- SpatialPolygons((PolygonsToMake),
-                                             proj4string = CRS(
-                                               as.character(paste("+proj=utm +zone=",UTMzone," +south +datum=NAD83 +units=m +no_defs +ellps=GRS80",sep=""))  
-                                             ))
+  } else if(Hemisphere=="N"){
+    crs_string <- paste("+proj=utm +zone=",UTMzone," +datum=NAD83 +units=m +no_defs +ellps=GRS80",sep="")
+  } else if(Hemisphere=="S"){
+    crs_string <- paste("+proj=utm +zone=",UTMzone," +south +datum=NAD83 +units=m +no_defs +ellps=GRS80",sep="")
   }
 
-  SpatialPolygonsToMake.df <- SpatialPolygonsDataFrame(SpatialPolygonsToMake,
-                                                       data.frame(id=rownames(PlotsAdjustedM),
-                                                                  row.names=rownames(PlotsAdjustedM)))
+  # Create sf object
+  geom_sfc <- sf::st_sfc(PolygonsToMake, crs = crs_string)
+  sf_obj <- sf::st_sf(data.frame(id=rownames(PlotsAdjustedM)), geometry = geom_sfc)
+
+  # Write shapefile
+  FolderpathGPSPlots <- paste(field,"_",outfile,".shp",sep="")
+  sf::st_write(sf_obj, FolderpathGPSPlots, layer = field,
+               driver = "ESRI Shapefile", delete_layer = TRUE, quiet = FALSE)
 
 
-  FolderpathGPSPlots<-paste(field,"_",outfile,".shp",sep="")
-  writeOGR(SpatialPolygonsToMake.df,
-           FolderpathGPSPlots,
-           field,
-           verbose = TRUE,
-           overwrite_layer = T,
-           driver="ESRI Shapefile")
+  ########## Make Buffered Shape Files using sf package ##############
 
-
-  ########## Make Shape Files4 ##############
-  # ord_infile<-infile[order(infile$Range,infile$Row)]
-
-  # IDs<- as.character(infile$Barcode)
-
-  PolygonsToMake <- vector('list', length(nPlot))
+  # Create buffered polygon geometries using sf
+  PolygonsToMakeBuf <- vector('list', nrow(PlotsAdjustedM))
   for (i in 1: nrow(PlotsAdjustedM)) {
-    PolygonsToMake[[i]] <- Polygons(list(Polygon(matrix(c(PlotsAdjustedMBuf[i,c(5,7,9,11,5)],
-                                                          PlotsAdjustedMBuf[i,c(4,6,8,10,4)]),5,2), hole=FALSE)),
-                                    rownames(PlotsAdjustedMBuf)[i])
+    coords <- matrix(c(PlotsAdjustedMBuf[i,c(5,7,9,11,5)],
+                       PlotsAdjustedMBuf[i,c(4,6,8,10,4)]), ncol=2)
+    PolygonsToMakeBuf[[i]] <- sf::st_polygon(list(coords))
   }
 
-  if(is.null(UTMzone)){
-    SpatialPolygonsToMake <- SpatialPolygons((PolygonsToMake))
-    warning("Coordinate reference system not defined 'UTMzone=NULL'; This may result in difficulties loading shapefiles into other programs.")
-  }
-  
-  if(!is.null(UTMzone)&Hemisphere=="N"){
-    SpatialPolygonsToMake <- SpatialPolygons((PolygonsToMake),
-                                             proj4string = CRS(
-                                               as.character(paste("+proj=utm +zone=",UTMzone," +datum=NAD83 +units=m +no_defs +ellps=GRS80",sep=""))  
-                                             ))
-  }
-  
-  if(!is.null(UTMzone)&Hemisphere=="S"){
-    SpatialPolygonsToMake <- SpatialPolygons((PolygonsToMake),
-                                             proj4string = CRS(
-                                               as.character(paste("+proj=utm +zone=",UTMzone," +south +datum=NAD83 +units=m +no_defs +ellps=GRS80",sep=""))  
-                                             ))
-  }
+  # CRS already defined above, reuse the same crs_string
 
-  SpatialPolygonsToMake.df <- SpatialPolygonsDataFrame(SpatialPolygonsToMake,
-                                                       data.frame(id=rownames(PlotsAdjustedMBuf),
-                                                                  row.names=rownames(PlotsAdjustedMBuf)))
+  # Create sf object for buffered polygons
+  geom_sfc_buf <- sf::st_sfc(PolygonsToMakeBuf, crs = crs_string)
+  sf_obj_buf <- sf::st_sf(data.frame(id=rownames(PlotsAdjustedMBuf)), geometry = geom_sfc_buf)
 
-
-  FolderpathGPSPlots<-paste(field,outfile,"buff.shp",sep="_")
-  writeOGR(SpatialPolygonsToMake.df,
-           FolderpathGPSPlots,
-           paste(field,"Buff",sep="_"),
-           verbose = TRUE,
-           overwrite_layer = T,
-           driver="ESRI Shapefile")
+  # Write buffered shapefile
+  FolderpathGPSPlotsBuf <- paste(field,outfile,"buff.shp",sep="_")
+  sf::st_write(sf_obj_buf, FolderpathGPSPlotsBuf, layer = paste(field,"Buff",sep="_"),
+               driver = "ESRI Shapefile", delete_layer = TRUE, quiet = FALSE)
 
   
 }
