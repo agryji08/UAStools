@@ -7,8 +7,8 @@ agricultural research applications using Unmanned Aerial System (UAS) imagery.
 """
 
 __version__ = "0.5.0"
-__author__ = "Steven L. Anderson II, Seth C. Murray"
-__email__ = "andersst@tamu.edu"
+__author__ = "Steven L. Anderson II, Seth C. Murray, Zhongjie Ji"
+__email__ = "andersst@tamu.edu, zji7@unl.edu"
 
 from .plotshpcreate import plotshpcreate
 
