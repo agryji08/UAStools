@@ -207,34 +207,6 @@ Both versions generate:
 
 ---
 
-## 👥 Authors
-
-- **Steven L. Anderson II** - Original author and maintainer
-  - Email: andersst@tamu.edu
-  - Role: Author, Creator
-
-- **Seth C. Murray** - Contributor
-  - Role: Author
-
-- **Zhongjie Ji** - Contributor
-  - Email: zji7@unl.edu
-  - Role: Author, Monorepo maintainer
-
----
-
-## 📄 Citation
-
-If you use UAStools in your research, please cite:
-
-```bibtex
-@software{uastools2025,
-  title = {UAStools: Tools for Field Based Remote Sensing Applications within Plot Based Agriculture},
-  author = {Anderson, Steven L. and Murray, Seth C. and Ji, Zhongjie},
-  year = {2025},
-  version = {0.5.0},
-  url = {https://github.com/agryji08/UAStools}
-}
-```
 
 ---
 
@@ -288,7 +260,6 @@ pytest tests/
 
 - **Issues**: [GitHub Issues](https://github.com/agryji08/UAStools/issues)
 - **Email**:
-  - Steven L. Anderson II: andersst@tamu.edu
   - Zhongjie Ji: zji7@unl.edu
 - **Documentation**: See package-specific READMEs
 
